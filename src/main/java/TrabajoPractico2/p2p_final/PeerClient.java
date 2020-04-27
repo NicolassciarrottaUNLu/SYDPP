@@ -48,10 +48,10 @@ public class PeerClient implements Runnable{
 			
 			int in;
 			
-			String a= guardo +"/"+ file;
+			String archive= guardo +"/"+ file;
 			
 			BufferedInputStream bis = new BufferedInputStream(socketClient.getInputStream());
-			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(a));
+			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(archive));
 			
 			while ((in = bis.read(received)) != -1){
 				 bos.write(received,0,in);

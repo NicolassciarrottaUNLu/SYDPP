@@ -32,6 +32,10 @@ public class Peer_Data {
 	public ArrayList<String> getFiles(){
 		return files;
 	}
+	
+	public void addFile (String newFile) {
+		files.add(newFile);
+	}
 	public String getRute() {
 		return this.share;
 	}

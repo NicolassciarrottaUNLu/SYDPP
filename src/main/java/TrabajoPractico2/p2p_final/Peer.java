@@ -23,7 +23,6 @@ public class Peer {
 	private static String name;
 	private static String _SERVER = "localhost";
 	private static int _PORTMASTER = 9000;
-	private static int _PORTREPLICA = 9002;
 	private static Socket socketPeer;
 	private static BufferedReader inputChannel;
 	private static PrintWriter outputChannel;
@@ -46,6 +45,7 @@ public class Peer {
 		}
 		
 	}
+	
 	private static void menuPeer() {
 		System.out.println("--------- Peer menu ---------");
 		System.out.println("Choose one option");
@@ -116,6 +116,8 @@ public class Peer {
 									PeerClient peerClient = new PeerClient(port,file,route,directory);
 									Thread threadPeerClient = new Thread(peerClient);
 									threadPeerClient.start();
+									fileToShare.add(file);
+									outputChannel.println("updateFiles@" + name +"@"+file);
 									log.info("[PEER] - File received");
 								}else {
 									log.info("[PEER] - File not found");
@@ -130,7 +132,6 @@ public class Peer {
 								}
 								menuPeer();
 								break;
-						
 					default:
 						System.out.println("Wrong");
 					break;
@@ -142,6 +143,7 @@ public class Peer {
 					outputChannel.close();
 					inputChannel.close();
 					socketPeer.close();
+					System.exit(0);
 				}
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

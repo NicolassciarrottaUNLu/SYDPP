@@ -19,10 +19,9 @@ public class MasterRunnable implements Runnable {
 	private BufferedReader inputChannel;
 	private PrintWriter outputChannel;
 
-		
+	private Master replica = new Master();
 
-
-	public MasterRunnable(Socket peerSocket, ArrayList<String> nodes, ArrayList<Peer_Data> listOfPeerData) {
+	public MasterRunnable(Socket peerSocket, ArrayList<Peer_Data> listOfPeerData) {
 		this.peerSocket=peerSocket;
 		this.listOfPeerData=listOfPeerData;
 	}
@@ -51,10 +50,10 @@ public class MasterRunnable implements Runnable {
 			inputChannel =  new BufferedReader (new InputStreamReader (peerSocket.getInputStream()));
 			outputChannel = new PrintWriter (peerSocket.getOutputStream(),true);
 			
-			while(peerSocket.isConnected()) {
-				
-				String msgPeer = inputChannel.readLine();
-				
+			String msgPeer = inputChannel.readLine();
+			System.out.println(msgPeer);
+			
+			while(!msgPeer.startsWith("bye")) {
 					if(msgPeer.startsWith("initialConfiguration")) {
 						String msgPeerParts[]=msgPeer.split("@");
 						
@@ -82,10 +81,28 @@ public class MasterRunnable implements Runnable {
 									}
 									if(!encontre) {
 										outputChannel.println("fileNotFound");
+										
 									}
 							} 
 							
-							if(msgPeer.startsWith("bye")){
+							if (msgPeer.startsWith("updateFiles")) {
+								String msgPeerParts[]=msgPeer.split("@");
+								int name = Integer.parseInt(msgPeerParts[1]);
+									for(int i=0;i<listOfPeerData.size();i++) {
+										if(listOfPeerData.get(i).getName()==name) {
+											listOfPeerData.get(i).addFile(msgPeerParts[2]);
+										}
+									}
+								log.info("[SERVER] - Update files of Peer");
+							}
+							
+							
+							//Posibilidad de levantar la replica.
+							//Solo update
+							replica.update(listOfPeerData);
+	
+							msgPeer = inputChannel.readLine();
+							if(msgPeer.startsWith("Bye")){
 								String msgPeerParts[] = msgPeer.split("@");
 								int name = Integer.parseInt(msgPeerParts[1]);
 									for(int i=0;i<listOfPeerData.size();i++) {
@@ -93,13 +110,15 @@ public class MasterRunnable implements Runnable {
 											listOfPeerData.remove(i);
 										}
 									}
+									log.info("[SERVER] - Peer remove");
+									outputChannel.close();
+									inputChannel.close();
 							}
-						}
-			
-			
+			}
 			
 			
 		}
+	
 		 catch (IOException e) {
 			 if (!peerSocket.isConnected()) {
 				 log.error("[PEER] - ERROR Client disconnect - " + e.getMessage());
