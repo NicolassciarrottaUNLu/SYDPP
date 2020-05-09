@@ -1,4 +1,4 @@
-package TrabajoPractico2.p2p_final;
+package p2p;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
