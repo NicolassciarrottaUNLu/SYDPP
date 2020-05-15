@@ -11,7 +11,7 @@ public class Client {
 
 	private int id_client;
 	private String _SERVER = "localhost";
-	private int _PORT = 9000;
+	private int _PORT = 8000;
 	private Random rnd = new Random();
 	
 	public Client(int id_client) {
@@ -32,8 +32,8 @@ public class Client {
 		
 		try {
 			
-			ArrayList<Integer>numerosA = new ArrayList();
-			ArrayList<Integer>numerosB = new ArrayList();
+			ArrayList<Integer>numerosA = new ArrayList<Integer>();
+			ArrayList<Integer>numerosB = new ArrayList<Integer>();
 			
 			Registry clientRMI = LocateRegistry.getRegistry(_SERVER,_PORT);
 			IRemoteInt iRserver = (IRemoteInt) clientRMI.lookup("service");

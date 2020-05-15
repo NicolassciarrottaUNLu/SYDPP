@@ -8,15 +8,15 @@ public class Main {
 
 	public static void main(String[] args) throws RemoteException, NotBoundException {
 		Balanceador balancer = new Balanceador();
-		balancer.newNode();
-		balancer.newNode();
-		balancer.newNode();
+		balancer.newServer();
+		balancer.newServer();
+		balancer.newServer();
 		balancer.initBalancer();
 				
 		Scanner sc = new Scanner(System.in);
-		sc.nextLine();
+	
 		
-			for (int i=0; i<2; i++) {
+			for (int i=0; i<10; i++) {
 				Client client = new Client(i);
 				client.clientUp();
 				sc.nextLine();
@@ -24,7 +24,7 @@ public class Main {
 		
 
 
-	}
+	}          
 }
 /*
  * new Thread(new Runnable() {

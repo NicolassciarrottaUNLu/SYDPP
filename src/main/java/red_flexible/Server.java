@@ -1,6 +1,7 @@
 package red_flexible;
 
 
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -15,21 +16,36 @@ public class Server implements Runnable, IControl{
 	private int _PORT;
 	private Registry serverRMI;
 	private Logger log = LoggerFactory.getLogger(Server.class);
+	private int position;
+	private String _SERVER;
+	private int tasks;
 	
 	
 	
+	
+	public Server(int _PORT, int position, String _SERVER, int tasks) {
+		super();
+		this._PORT = _PORT;
+		this.position = position;
+		this._SERVER = _SERVER;
+		this.tasks = tasks;
+	}
+
 	public Server(int _PORT) {
 		this._PORT = _PORT;
 	}
 	
+	private int generatePortToService(int _PORT) {
+		return 10000+_PORT;
+	}
+	
 			
 	public void run() {
-		
 		try {
 			serverRMI = LocateRegistry.createRegistry(_PORT);
 			ServerImplementer serverImplementer = new ServerImplementer();
-			IRemoteInt service = (IRemoteInt) UnicastRemoteObject.exportObject(serverImplementer,_PORT);
-			serverRMI.rebind("service", service);
+			IRemoteInt service = (IRemoteInt) UnicastRemoteObject.exportObject(serverImplementer,generatePortToService(_PORT));
+			serverRMI.rebind("serviceServer", service);
 			System.out.println("Server RMI has created as port: " + _PORT);
 			
 		} catch (RemoteException e) {
@@ -41,10 +57,38 @@ public class Server implements Runnable, IControl{
 	@Override
 	public void serverStop() throws RemoteException {
 		try {
-			serverRMI.unbind("service");
+			serverRMI.unbind("serviceServer");
 			log.info("Server unbinded");
 		} catch (RemoteException | NotBoundException e) {
 			log.error("Error - Fail to unbind server");
 		}
+	}
+	
+	public String get_SERVER() {
+		return _SERVER;
+	}
+	
+	public int getTasks() {
+		return tasks;
+	}
+	
+	public String getDirection() {
+		return (_SERVER + ":" + _PORT);
+	}
+	
+	public void addTasks() {
+		this.tasks++;
+	}
+	
+	public void substracTasks() {
+		this.tasks--;
+	}
+
+	public int getPosition() {
+		return this.position;
+	}
+	
+	public int getPort() {
+		return this._PORT;
 	}
 }

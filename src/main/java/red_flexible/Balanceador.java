@@ -14,7 +14,6 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sun.rmi.server.UnicastServerRef;
 
 public class Balanceador{
 
@@ -32,10 +31,10 @@ public class Balanceador{
 	private int _NORMAL= 3; 
 	private int _ALERT = 4;
 	private int _CRITIC = 5;
-	private int _PORT = 9000;
+	private int _PORT = 8000;
 	private int _INITIALSERVERS = 3;
 	private String _SERVER = "localhost";
-	private ArrayList<Node> listNodes = new ArrayList<Node>();
+	private ArrayList<Server> listServer = new ArrayList<Server>();
 	private static Logger log = LoggerFactory.getLogger(Balanceador.class);
 	
 	
@@ -45,42 +44,31 @@ public class Balanceador{
 		}else
 			return(9010 + endPort);
 	}
-	
-	
-	private void loadFirstNodes() {
-		for(int i =0; i<_INITIALSERVERS;i++) {
-			Node node = new Node(i,_SERVER,generatePort(i),_LIGHT);
-			listNodes.add(node);
-			log.info("Initial server created: " + node.getDirection());
-		}
-	}
-	
-	
+		
 	/*
 	 * create a new node and new thread
 	 */
-	public Node newNode(){
-		Node node = null;
-			synchronized(listNodes){
+	public Server newServer(){
+		Server server = null;
+			synchronized(listServer){
 				//Assigned the last position synchronized
-				node = new Node(listNodes.size(),_SERVER,generatePort(listNodes.size()),_LIGHT);
-				listNodes.add(node);
-				log.info("Node "+ node.getDirection() +" created");
-			}
-			Server server = new Server(node.getPort()); //Create a new instace of Server
-			Thread tserver = new Thread(server); //Create a new Thread
-			tserver.start();		
-		return node;
+				server = new Server(generatePort(listServer.size()),listServer.size(),_SERVER,_LIGHT);
+				Thread tserver = new Thread(server); //Create a new Thread
+				tserver.start();
+				listServer.add(server);
+				}
+		log.info("Server "+ server.getDirection() +" created");	
+		return server;
 	}
 	
 	
-	public void stopNode(Node node) throws NotBoundException {
+	public void stopServer(Server server) throws NotBoundException {
 		try {
-			Registry registry = LocateRegistry.getRegistry(node.get_SERVER(),node.getPort());
+			Registry registry = LocateRegistry.getRegistry(server.getPort());
 			IControl remoteInt = (IControl) registry.lookup("service");
 			remoteInt.serverStop();
-			synchronized(listNodes) {
-				listNodes.remove(node);
+			synchronized(listServer) {
+				listServer.remove(server);
 			}
 			
 		} catch (NumberFormatException |RemoteException e) {
@@ -92,49 +80,46 @@ public class Balanceador{
 	 *Assign task depending node load
 	 */
 	
-	public synchronized  Node assignTask() {
-		Collections.sort(listNodes, new SortMyList());
+	public synchronized  Server assignTask() {
+		Collections.sort(listServer, new SortMyList());
 		//get first on the list
-		Node nodo = listNodes.get(0);
-		String direction = nodo.getDirection();
-			if(nodo.getTasks()<=_NORMAL) {
-				nodo.addTasks();
-				log.info("SERVER " + nodo.getDirection() + " STATUS is NORMAL");
-				log.info("Task assigned to " + nodo.getDirection());
-			}else if((nodo.getTasks()>=_ALERT) && (nodo.getTasks()<_CRITIC)) { 
-				nodo.addTasks();
-				log.info("SERVER " + nodo.getDirection() + " STATUS is ALERT");
-				log.info("Task assigned to " + nodo.getDirection());
-			}else if(nodo.getTasks()==_CRITIC){
-				Node nNew = newNode(); //Creo el nodo pero asigno la tarea al nodo anterior
-				nodo.addTasks();
+		Server server = listServer.get(0);
+		String direction = server.getDirection();
+			if(server.getTasks()<=_NORMAL) {
+				server.addTasks();
+				log.info("SERVER " + server.getDirection() + " STATUS is NORMAL");
+				log.info("Task assigned to " + server.getDirection());
+			}else if((server.getTasks()>=_ALERT) && (server.getTasks()<_CRITIC)) { 
+				server.addTasks();
+				log.info("SERVER " + server.getDirection() + " STATUS is ALERT");
+				log.info("Task assigned to " + server.getDirection());
+			}else if(server.getTasks()==_CRITIC){
+				Server nNew = newServer(); //Creo el nodo pero asigno la tarea al nodo anterior
+				server.addTasks();
 				log.info("SERVER " + direction + " STATUS is CRITIC. This server isn't work for now");
 				log.info("New server has created as " + nNew.getDirection());
 				log.info("Task assigned to " + nNew.getDirection());
 			}
 			
 		
-	return nodo;
+	return server;
 	}
 	
 	
-	public synchronized void terminateTask(int nodePosition) throws NotBoundException {
-		synchronized (listNodes) {
-			listNodes.get(nodePosition).substracTasks();
-			log.info("Task terminate for node: " + listNodes.get(nodePosition).getDirection());
-			if ((listNodes.get(nodePosition).getTasks()==0) && (listNodes.size()>_INITIALSERVERS)) {
-				stopNode(listNodes.get(nodePosition));
+	public synchronized void terminateTask(int serverPosition) throws NotBoundException {
+		synchronized (listServer) {
+			listServer.get(serverPosition).substracTasks();
+			log.info("Task terminate for node: " + listServer.get(serverPosition).getDirection());
+			if ((listServer.get(serverPosition).getTasks()==0) && (listServer.size()>_INITIALSERVERS)) {
+				stopServer(listServer.get(serverPosition));
 			}
 	}
 
 	}
 	
 	
-	public void serveCostumer() {
-		
-	}
-	
 	public void initBalancer() throws RemoteException {
+		
 		
 		Remote iRemote = UnicastRemoteObject.exportObject( new IRemoteInt() {
 		
@@ -144,12 +129,12 @@ public class Balanceador{
 					Registry registry;
 					ArrayList<Integer> resultado = new ArrayList<Integer>();
 					try {
-						Node nodo = assignTask();
-						int i = nodo.getPosition();
-						registry = LocateRegistry.getRegistry(nodo.get_SERVER(), nodo.getPort());
-						IRemoteInt iRBalancer = (IRemoteInt) registry.lookup("service");
+						Server server = assignTask();
+						int i = server.getPosition();
+						registry = LocateRegistry.getRegistry(server.getPort());
+						IRemoteInt iRBalancer = (IRemoteInt) registry.lookup("serviceServer");
 						resultado=iRBalancer.suma(numerosA, numerosB);
-						//terminateTask(i);
+						terminateTask(i);
 					}catch (Exception e) {
 						System.out.println("In balancer " + e.getMessage());
 					}
@@ -158,10 +143,10 @@ public class Balanceador{
 			
 		},0);
 		
-		if (listNodes.size()>1) {
+		if (listServer.size()>1) {
 			Registry registry = LocateRegistry.createRegistry(_PORT);
 			registry.rebind("service", iRemote);
-			log.info("Balancer RMI initiated");
+			log.info("Balancer RMI initiated on port " + _PORT);
 		}
 		
 	}
