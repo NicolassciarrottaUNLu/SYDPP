@@ -53,6 +53,7 @@ public class Balanceador{
 			synchronized(listServer){
 				//Assigned the last position synchronized
 				server = new Server(generatePort(listServer.size()),listServer.size(),_SERVER,_LIGHT);
+					
 				Thread tserver = new Thread(server); //Create a new Thread
 				tserver.start();
 				listServer.add(server);
@@ -100,16 +101,17 @@ public class Balanceador{
 				log.info("New server has created as " + nNew.getDirection());
 				log.info("Task assigned to " + nNew.getDirection());
 			}
+		
 			
 		
 	return server;
 	}
 	
 	
-	public synchronized void terminateTask(int serverPosition) throws NotBoundException {
+	public synchronized void terminateTask(int serverPosition) throws NotBoundException, InterruptedException {
 		synchronized (listServer) {
 			listServer.get(serverPosition).substracTasks();
-			log.info("Task terminate for node: " + listServer.get(serverPosition).getDirection());
+			log.info("Task terminated by server: " + listServer.get(serverPosition).getDirection());
 			if ((listServer.get(serverPosition).getTasks()==0) && (listServer.size()>_INITIALSERVERS)) {
 				stopServer(listServer.get(serverPosition));
 			}
@@ -119,8 +121,8 @@ public class Balanceador{
 	
 	
 	public void initBalancer() throws RemoteException {
-		
-		
+		newServer();
+		newServer();
 		Remote iRemote = UnicastRemoteObject.exportObject( new IRemoteInt() {
 		
 			@Override
@@ -134,9 +136,10 @@ public class Balanceador{
 						registry = LocateRegistry.getRegistry(server.getPort());
 						IRemoteInt iRBalancer = (IRemoteInt) registry.lookup("serviceServer");
 						resultado=iRBalancer.suma(numerosA, numerosB);
+						
 						terminateTask(i);
 					}catch (Exception e) {
-						System.out.println("In balancer " + e.getMessage());
+						log.error("ERROR IN BALANCER " + e.getMessage());
 					}
 				return resultado;
 			}

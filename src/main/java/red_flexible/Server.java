@@ -2,6 +2,7 @@ package red_flexible;
 
 
 
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -15,14 +16,11 @@ public class Server implements Runnable, IControl{
 
 	private int _PORT;
 	private Registry serverRMI;
+	private static ServerImplementer serverImplementer;
 	private Logger log = LoggerFactory.getLogger(Server.class);
 	private int position;
 	private String _SERVER;
 	private int tasks;
-	
-	
-	
-	
 	public Server(int _PORT, int position, String _SERVER, int tasks) {
 		super();
 		this._PORT = _PORT;
@@ -41,19 +39,21 @@ public class Server implements Runnable, IControl{
 	
 			
 	public void run() {
+			
 		try {
 			serverRMI = LocateRegistry.createRegistry(_PORT);
-			ServerImplementer serverImplementer = new ServerImplementer();
-			IRemoteInt service = (IRemoteInt) UnicastRemoteObject.exportObject(serverImplementer,generatePortToService(_PORT));
-			serverRMI.rebind("serviceServer", service);
 			System.out.println("Server RMI has created as port: " + _PORT);
-			
+			serverImplementer = new ServerImplementer();
+			IRemoteInt service = (IRemoteInt) UnicastRemoteObject.exportObject(serverImplementer,generatePortToService(_PORT));
+			serverRMI.bind("serviceServer", service);
+
 		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		}
 		
 	}
-	
 	@Override
 	public void serverStop() throws RemoteException {
 		try {

@@ -40,7 +40,7 @@ public class Client {
 			
 			numerosA.add(rnd.nextInt(20));numerosA.add(rnd.nextInt(20));numerosA.add(rnd.nextInt(20));numerosA.add(rnd.nextInt(20));
 			numerosB.add(rnd.nextInt(20));numerosB.add(rnd.nextInt(20));numerosB.add(rnd.nextInt(20));numerosB.add(rnd.nextInt(20));
-			
+			System.out.println("Client n°" + id_client);
 			System.out.println("Array 1 = " + writeArray(numerosA, " "));
 			System.out.println("Array 2 = " + writeArray(numerosB, " "));
 			System.out.print("SUMA = " + writeArray(iRserver.suma(numerosA,numerosB), " "));
@@ -49,4 +49,8 @@ public class Client {
 		}
 		
 	}
+
+
+
+
 }
