@@ -128,6 +128,11 @@ public class Balanceador{
 			e.printStackTrace();
 		}
 		
+		
+		
+		
+		
+		
 		return imageParts;
 		
 	}
