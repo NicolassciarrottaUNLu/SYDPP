@@ -3,7 +3,7 @@ package red_flexible;
 import java.rmi.NotBoundException;
 
 public class Main {
-	public void newClient(final int n) {
+	private void newClient(final int n) {
 		new Thread(new Runnable() {
 
 			@Override
