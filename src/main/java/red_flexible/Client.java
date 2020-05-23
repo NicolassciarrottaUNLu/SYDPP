@@ -45,7 +45,10 @@ public class Client {
 			System.out.println("Array 2 = " + writeArray(numerosB, " "));
 			System.out.print("SUMA = " + writeArray(iRserver.suma(numerosA,numerosB), " "));
 		} catch (RemoteException e) {
-			System.out.println(e.getMessage());
+			System.out.println("CLIENTEEEEEEEE");
+			e.printStackTrace();
+			
+			//System.out.println(e.getMessage());
 		}
 		
 	}

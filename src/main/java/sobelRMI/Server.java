@@ -1,96 +1,38 @@
 package sobelRMI;
 
-
-
-
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class Server implements Serializable{
 
-public class Server implements Runnable, IControl{
-
-	private int _PORT;
-	private Registry serverRMI;
-	private static Sobel sobel;
-	private Logger log = LoggerFactory.getLogger(Server.class);
-	private int position;
-	private String _SERVER;
-	private int tasks;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private static int port = 9000;
 	
-	public Server(int _PORT, int position, String _SERVER, int tasks) {
-		super();
-		this._PORT = _PORT;
-		this.position = position;
-		this._SERVER = _SERVER;
-		this.tasks = tasks;
-	}
-
-	public Server(int _PORT) {
-		this._PORT = _PORT;
+	private int generatePort(int endPort) {
+		if (endPort>9) {
+			return (9020 + endPort);
+		}else
+			return(9010 + endPort);
 	}
 	
-	private int generatePortToService(int _PORT) {
-		return 10000+_PORT;
-	}
-	
-			
-	public void run() {
-			
+	public static void main(String[] args) {
+		
+		Registry serverRMI;
 		try {
-			serverRMI = LocateRegistry.createRegistry(_PORT);
-			System.out.println("Server RMI has created as port: " + _PORT);
-			sobel = new Sobel();
-			ISobel service = (ISobel) UnicastRemoteObject.exportObject(sobel,generatePortToService(_PORT));
-			serverRMI.bind("serviceServer", service);
-
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (AlreadyBoundException e) {
+			serverRMI = LocateRegistry.createRegistry(port);
+			Worker worker = new Worker();
+			ISobel service= (ISobel) UnicastRemoteObject.exportObject(worker,port);
+			serverRMI.rebind("service", service);
+			System.out.println("Server RMI has created as port " + port);
+		} catch (RemoteException e) {	
 			e.printStackTrace();
 		}
 		
-	}
-	@Override
-	public void serverStop() throws RemoteException {
-		try {
-			serverRMI.unbind("serviceServer");
-			log.info("Server unbinded");
-		} catch (RemoteException | NotBoundException e) {
-			log.error("Error - Fail to unbind server");
-		}
-	}
-	
-	public String get_SERVER() {
-		return _SERVER;
-	}
-	
-	public int getTasks() {
-		return tasks;
-	}
-	
-	public String getDirection() {
-		return (_SERVER + ":" + _PORT);
-	}
-	
-	public void addTasks() {
-		this.tasks++;
-	}
-	
-	public void substracTasks() {
-		this.tasks--;
-	}
-
-	public int getPosition() {
-		return this.position;
-	}
-	
-	public int getPort() {
-		return this._PORT;
 	}
 }
