@@ -84,5 +84,7 @@ public class Sobel {
 
 		        return imgNueva;
 		    }
+
+		
 		}
 

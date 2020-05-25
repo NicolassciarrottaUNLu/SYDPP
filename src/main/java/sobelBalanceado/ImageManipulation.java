@@ -1,4 +1,4 @@
-package sobel.centralizado;
+package sobelBalanceado;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -27,7 +27,6 @@ public class ImageManipulation {
 				arrayImagen.add(parte);
 			}
 		}
-		
 		return arrayImagen;
 	}
 	

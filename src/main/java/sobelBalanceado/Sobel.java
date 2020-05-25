@@ -1,4 +1,4 @@
-package sobel.centralizado;
+package sobelBalanceado;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -13,7 +13,6 @@ public class Sobel {
 			this.image = imagen;
 		}
 			
-		
 		public BufferedImage applyFilter() {
 			    
 			    // the sobel matrix in two 2D arrays
@@ -85,5 +84,7 @@ public class Sobel {
 
 		        return imgNueva;
 		    }
+
+		
 		}
 

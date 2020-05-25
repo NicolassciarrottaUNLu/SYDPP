@@ -1,18 +1,20 @@
-package sobel.centralizado;
+package sobelBalanceado;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
-public class Client {
-
+public class Client{
 	
 	private static Scanner sc = new Scanner(System.in);
 	private static int _CORTES;
 	private static Long startTime, finalTime;
+	private static String _SERVER = "localhost";
+	private static int _PORT = 9000;
 	
 	private static String generateRoute(String route) {
 		String routeParts[] = route.split("/");
@@ -27,11 +29,15 @@ public class Client {
 		return result;
 	}
 	
-	
-	public static void main(String[] args)  {
-		
+
+	public static void main(String[] args) {
 		try {
-			System.out.println("----- SOBEL FILTER LOCAL -------");
+			System.out.println("----- SOBEL FILTER RMI -------");
+			
+			Registry clientRMI = LocateRegistry.getRegistry(_SERVER,_PORT);
+			ISobel isobel = (ISobel) clientRMI.lookup("service");
+			System.out.println("Client RMI started");
+			System.out.println("-----------------------------------------");
 			System.out.println("Insert image to apply Sobel filter (Route)");
 			String route = sc.nextLine();
 			System.out.println("Insert numbers of cuts");
@@ -46,28 +52,20 @@ public class Client {
 			System.out.println("Image upload successfully");
 			System.out.println("Your image will be cut into " + _CORTES + " parts");
 			System.out.println("Sobel filter in progress..");
-			
-			startTime = System.nanoTime();
-			ImageManipulation imageManipulation = new ImageManipulation(image, _CORTES);
-			ArrayList<BufferedImage> imageParts = imageManipulation.cutImage();
-			ArrayList<BufferedImage> imageParts_with_Sobel = new ArrayList<BufferedImage>();
-			
-				for(BufferedImage img : imageParts) {
-					Sobel sobel = new Sobel(img);
-					imageParts_with_Sobel.add(sobel.applyFilter());
-				}
-			
-				BufferedImage result = imageManipulation.joinImage(imageParts_with_Sobel);
-			
+			Imagen imagen = new Imagen(image,_CORTES);
+				
+				startTime = System.nanoTime();
+				Imagen a = isobel.send(imagen);
+				
 			File fileResult = new File(generateRoute(route));
-			ImageIO.write(result, "JPG", fileResult);
-			finalTime = System.nanoTime();
+			ImageIO.write(a.getImage(), "JPG", fileResult);
+			finalTime= System.nanoTime();
 			
 			System.out.println("Done! Your file is located at " + generateRoute(route));
 			System.out.println("Processing time: " + ((finalTime-startTime)/1000000) + "ms");
-		} catch (Exception e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
+
+}
 }
