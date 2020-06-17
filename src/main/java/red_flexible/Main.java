@@ -23,7 +23,7 @@ public class Main {
 	}
 	
 	public Main() {
-		for (int i=0; i<40; i++) {
+		for (int i=0; i<20; i++) {
 			newClient(i+1);
 		}
 	}
@@ -32,6 +32,7 @@ public class Main {
 		Balanceador balancer = new Balanceador();
 		balancer.initBalancer();
 		new Main();
+		
 
 	}          
 }

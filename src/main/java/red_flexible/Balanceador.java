@@ -32,7 +32,7 @@ public class Balanceador{
 	private int _ALERT = 4;
 	private int _CRITIC = 5;
 	private int _PORT = 8000;
-	private int _INITIALSERVERS = 3;
+	private int _INITIALSERVERS = 2;
 	private String _SERVER = "localhost";
 	private ArrayList<Server> listServer = new ArrayList<Server>();
 	private static Logger log = LoggerFactory.getLogger(Balanceador.class);
@@ -63,14 +63,16 @@ public class Balanceador{
 	}
 	
 	
-	public void stopServer(Server server) throws NotBoundException {
+	public void stopServer(Server server) throws NotBoundException, InterruptedException {
 		try {
-			Registry registry = LocateRegistry.getRegistry(server.getPort());
-			IControl remoteInt = (IControl) registry.lookup("service");
-			remoteInt.serverStop();
-			synchronized(listServer) {
+			server.serverStop();
+			synchronized (listServer) {
+				//doy tiempo a que todos terminen
+				Thread.sleep(2000);
 				listServer.remove(server);
 			}
+			
+			
 			
 		} catch (NumberFormatException |RemoteException e) {
 			log.error("Error - Can't stop server");
@@ -108,11 +110,12 @@ public class Balanceador{
 	}
 	
 	
-	public synchronized void terminateTask(int serverPosition) throws NotBoundException, InterruptedException {
+	public void terminateTask(int serverPosition) throws NotBoundException, InterruptedException {
 		synchronized (listServer) {
-			listServer.get(serverPosition).substracTasks();
-			log.info("Task terminated by server: " + listServer.get(serverPosition).getDirection());
-			if ((listServer.get(serverPosition).getTasks()==0) && (listServer.size()>_INITIALSERVERS)) {
+			Server server = listServer.get(serverPosition);
+			server.substracTasks();
+			log.info("Task terminated by server: " + server.getDirection());
+			if ((server.getTasks()<=0) && (listServer.size()>_INITIALSERVERS)) {
 				stopServer(listServer.get(serverPosition));
 			}
 	}
@@ -122,7 +125,7 @@ public class Balanceador{
 	
 	public void initBalancer() throws RemoteException {
 		newServer();
-		newServer();
+		newServer();		
 		Remote iRemote = UnicastRemoteObject.exportObject( new IRemoteInt() {
 		
 			@Override
@@ -130,23 +133,23 @@ public class Balanceador{
 					throws RemoteException {
 					Registry registry;
 					ArrayList<Integer> resultado = new ArrayList<Integer>();
+					Server server = assignTask();
+					int i = server.getPosition();
 					try {
-						Server server = assignTask();
-						int i = server.getPosition();
 						registry = LocateRegistry.getRegistry(server.getPort());
 						IRemoteInt iRBalancer = (IRemoteInt) registry.lookup("serviceServer");
 						resultado=iRBalancer.suma(numerosA, numerosB);
-						
 						terminateTask(i);
 					}catch (Exception e) {
-						log.error("ERROR IN BALANCER " + e.getMessage());
+						resultado = null;
+						log.error("Balancer cannot work with the task "+ i +" at this moment - " + e.getMessage());
 					}
 				return resultado;
 			}
 			
 		},0);
 		
-		if (listServer.size()>1) {
+		if (listServer.size()>=1) {
 			Registry registry = LocateRegistry.createRegistry(_PORT);
 			registry.rebind("service", iRemote);
 			log.info("Balancer RMI initiated on port " + _PORT);

@@ -1,7 +1,9 @@
 package red_flexible;
 
-public interface IControl {
+import java.rmi.Remote;
+
+public interface IControl extends Remote {
 	
-	void serverStop() throws java.rmi.RemoteException;
+	public void serverStop() throws java.rmi.RemoteException;
 
 }

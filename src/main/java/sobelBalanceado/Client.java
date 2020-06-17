@@ -23,7 +23,7 @@ public class Client{
 				result = result + routeParts[i] + "/";
 			}
 		if (!result.isEmpty()) {
-			result += "sobel.JPG";
+			result += "sobelDistribuido.JPG";
 		}
 		
 		return result;
@@ -52,7 +52,7 @@ public class Client{
 			System.out.println("Image upload successfully");
 			System.out.println("Your image will be cut into " + _CORTES + " parts");
 			System.out.println("Sobel filter in progress..");
-			Imagen imagen = new Imagen(image,_CORTES);
+			Imagen imagen = new Imagen(image,_CORTES,0);
 				
 				startTime = System.nanoTime();
 				Imagen a = isobel.send(imagen);

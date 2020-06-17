@@ -17,10 +17,12 @@ public class Imagen implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private byte[] byteImage;
 	private int _CORTES;
+	private int id;
 	
-	public Imagen (BufferedImage image, int _CORTES) {
+	public Imagen (BufferedImage image, int _CORTES,int id) {
 		this.byteImage = buffImgToByteArr(image);
 		this._CORTES=_CORTES;
+		this.id=id;
 	}
 	
 	public static byte[] buffImgToByteArr(BufferedImage img) {
@@ -60,6 +62,10 @@ public class Imagen implements Serializable{
 
 	public int get_CORTES() {
 		return _CORTES;
+	}
+	
+	public int getId() {
+		return this.id;
 	}
 	 
 }

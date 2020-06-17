@@ -2,8 +2,6 @@ package sobelBalanceado;
 
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -71,13 +69,27 @@ public class Balanceador{
 					imageParts = im.cutImage();
 					
 					for(int i=0;i<imageParts.size();i++) {
-							Imagen e = new Imagen(imageParts.get(i),1);
+							Imagen e = new Imagen(imageParts.get(i),1,i);
 							imagePartsCut.add(e);
 							newServer();
 							registry = LocateRegistry.getRegistry(listServer.get(i).getPort());
-							isobel = (ISobel) registry.lookup("serviceServer");
+							boolean b = false;
+								while (!b) {
+									isobel = (ISobel) registry.lookup("serviceServer");
+										if(isobel!=null) {
+											b=true;
+										}else {
+											Server s = newServer();
+											log.error("[BALANCER] - Server " + listServer.get(i).getDirection() +" Fail");
+											log.info("[BALANCER] - New server created - " +s.getDirection());
+											registry = LocateRegistry.getRegistry(s.getPort());
+											isobel = (ISobel) registry.lookup("serviceServer");
+										}
+								}
+					
 							results.add(isobel.send(imagePartsCut.get(i)));
 					}
+					
 					
 					ArrayList<BufferedImage> returnThis = new ArrayList<BufferedImage>();
 					for(Imagen ima : results) {
@@ -88,14 +100,14 @@ public class Balanceador{
 				} catch (Exception e) {	
 					e.printStackTrace();
 				}
-				finalImagen = new Imagen(a,0);
+				finalImagen = new Imagen(a,0,0);
 				for(Server server : listServer) {
 					server.serverStop();
 				}
 				
-				System.out.println(listServer.size());
 				return finalImagen;
 				
+			
 			}
 			
 		},0);

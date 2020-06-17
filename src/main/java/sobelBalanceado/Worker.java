@@ -27,7 +27,7 @@ public class Worker implements ISobel {
 		
 			BufferedImage result = iManipulation.joinImage(imageParts_with_Sobel);
 			
-			nueva = new Imagen (result,0);
+			nueva = new Imagen (result,0,0);
 			
 			
 		} catch (IOException e) {

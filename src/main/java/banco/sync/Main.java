@@ -15,7 +15,7 @@ public class Main {
 			ArrayList<Thread> threads = new ArrayList<Thread>();
 			Thread t;
 			
-			for(int i=0; i<5; i++) {
+			for(int i=0; i<50; i++) {
 				ClientBank client = new ClientBank(i,random.nextInt(5000),random.nextInt(5000),bankAccount);
 				System.out.println(client.clientToString());
 				sum += client.diference();

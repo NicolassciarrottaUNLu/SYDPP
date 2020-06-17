@@ -34,8 +34,8 @@ public class ImageManipulation {
 		/*
 		 * Calculo no exacto, hay que restar las partes
 		 */
-		int width = image.getWidth()-cantPartes*2;
-		int height = image.getHeight()-cantPartes*2;
+		int width = image.getWidth()-cantPartes*4;
+		int height = image.getHeight()-cantPartes*4;
 		BufferedImage imgFinal = new BufferedImage(width, height, image.getType());
 		Graphics g = imgFinal.getGraphics();
 		

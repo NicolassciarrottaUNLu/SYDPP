@@ -21,7 +21,7 @@ public class Client {
 				result = result + routeParts[i] + "/";
 			}
 		if (!result.isEmpty()) {
-			result += "sobel.JPG";
+			result += "sobel2.JPG";
 		}
 		
 		return result;

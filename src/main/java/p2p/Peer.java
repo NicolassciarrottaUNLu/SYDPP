@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -59,10 +58,24 @@ public class Peer {
 	
 	public static void startPeer() {
 		try {
+			int intentos = 0;
+			boolean flag = false;
+				while(!flag) {
+					log.info("[PEER] - Trying connect to server");
+					try {
+						socketPeer = new Socket(_SERVER,_PORTMASTER);
+						log.info("[PEER] - Socket created: " +_SERVER +":"+_PORTMASTER);
+					} catch (IOException e) {
+						intentos++;
+						
+					}
+						if (intentos>=3) {
+							flag = true;
+							log.error("[PEER] - No server found");
+							System.exit(0);
+						}
+				}
 			
-			log.info("[PEER] - Trying connect to server");
-			socketPeer = new Socket(_SERVER,_PORTMASTER);
-			log.info("[PEER] - Socket created: " +_SERVER +":"+_PORTMASTER);
 				
 			
 			System.out.println("--------- Peer menu ---------");
@@ -145,11 +158,9 @@ public class Peer {
 					socketPeer.close();
 					System.exit(0);
 				}
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 	
 	public static void main(String[] args) {

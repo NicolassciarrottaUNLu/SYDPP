@@ -56,8 +56,13 @@ public class Server implements Runnable, IControl{
 	@Override
 	public void serverStop() throws RemoteException {
 		try {
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+
+			}
 			serverRMI.unbind("serviceServer");
-			log.info("Server unbinded");
+			log.info("Server "+ this.getDirection() + " unbinded");
 		} catch (RemoteException | NotBoundException e) {
 			log.error("Error - Fail to unbind server");
 		}
