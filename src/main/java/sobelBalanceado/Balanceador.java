@@ -53,11 +53,11 @@ public class Balanceador{
 	
 	public void initBalancer() throws RemoteException {
 		Remote iSobel = UnicastRemoteObject.exportObject( new ISobel() {
-		ArrayList<Falla> fallidas = new ArrayList<Falla>();
+		int fallidas = 0;
 
 			@Override
 			public Imagen send(Imagen image) throws RemoteException {
-				Registry registry;
+				Registry registry=null;
 				ArrayList<Imagen> imagePartsCut = new ArrayList<Imagen>();
 				ArrayList<Imagen> results = new ArrayList<Imagen>();
 				ImageManipulation im = null;
@@ -74,37 +74,17 @@ public class Balanceador{
 					imageParts = im.cutImage();
 					
 					for(int i=0;i<imageParts.size();i++) {
-							Imagen e = new Imagen(imageParts.get(i),1,i);
-							imagePartsCut.add(e);
-							newServer();
-							registry = LocateRegistry.getRegistry(listServer.get(i).getPort());
-								try {
-									isobel = (ISobel) registry.lookup("serviceServer");
-								} catch (RemoteException|NotBoundException e1) {
-									listServer.get(i).serverStop();
-									try {
-										Thread.sleep(5000);
-									} catch (InterruptedException e3) {
-										e3.printStackTrace();
-									}
-									Server s = newServer();
-									log.error("[BALANCER] - Server " + listServer.get(i).getDirection() +" Fail");
-									registry = LocateRegistry.getRegistry(s.getPort());
-									try {
-										isobel = (ISobel) registry.lookup("serviceServer");
-									} catch (RemoteException | NotBoundException e2) {
-										Falla f = new Falla(imageParts.get(i),i);
-										fallidas.add(f);
-										continue;
-									}
-								}
-
-							results.add(isobel.send(imagePartsCut.get(i)));
+							try {
+								isobel = convert(registry, i, fallidas, imageParts.get(i), imageParts, imagePartsCut);
+								results.add(isobel.send(imagePartsCut.get(i)));
+								continue;
+							}catch(Exception e1) {
+								
+							}
+							
+							
 					}
 					
-					if (fallidas.size()>0) {
-						System.out.println("FALLE");
-					}
 					
 					
 					ArrayList<BufferedImage> returnThis = new ArrayList<BufferedImage>();
@@ -122,9 +102,36 @@ public class Balanceador{
 					server.serverStop();
 				}
 				
+				
+				
 				return finalImagen;
 				
 			
+			}
+
+			private ISobel convert(Registry registry, int i, int fallidas, BufferedImage bufferedImage,ArrayList<BufferedImage> imageParts,
+					ArrayList<Imagen> imagePartsCut) throws AccessException, RemoteException, NotBoundException {
+				try {
+					Imagen e = new Imagen(imageParts.get(i),1,i);
+					imagePartsCut.add(e);
+					newServer();
+					registry = LocateRegistry.getRegistry(listServer.get(i).getPort());
+					isobel = (ISobel) registry.lookup("serviceServer");
+				} catch (RemoteException|NotBoundException e1) {
+					fallidas++;
+					System.out.println("Server " + listServer.get(i).getDirection() +" fail. Fail n°:" + fallidas);
+					listServer.get(i).serverStop();
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e3) {
+						
+					}
+					convert(registry, i-1, fallidas, bufferedImage, imageParts, imagePartsCut);
+					
+				}
+				
+				
+				return isobel;
 			}
 			
 		},0);
