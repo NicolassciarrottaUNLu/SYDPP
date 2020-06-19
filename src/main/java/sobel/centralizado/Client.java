@@ -11,7 +11,7 @@ public class Client {
 
 	
 	private static Scanner sc = new Scanner(System.in);
-	private static int _CORTES;
+	private static int _CORTES =1;
 	private static Long startTime, finalTime;
 	
 	private static String generateRoute(String route) {
@@ -34,8 +34,6 @@ public class Client {
 			System.out.println("----- SOBEL FILTER LOCAL -------");
 			System.out.println("Insert image to apply Sobel filter (Route)");
 			String route = sc.nextLine();
-			System.out.println("Insert numbers of cuts");
-			_CORTES=sc.nextInt();
 				while (route.isEmpty()){
 					System.out.println("Please insert a file");
 					route = sc.nextLine();
@@ -44,7 +42,6 @@ public class Client {
 			File file = new File(route);
 			BufferedImage image = ImageIO.read(file);
 			System.out.println("Image upload successfully");
-			System.out.println("Your image will be cut into " + _CORTES + " parts");
 			System.out.println("Sobel filter in progress..");
 			
 			startTime = System.nanoTime();

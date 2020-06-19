@@ -53,7 +53,7 @@ public class Balanceador{
 	
 	public void initBalancer() throws RemoteException {
 		Remote iSobel = UnicastRemoteObject.exportObject( new ISobel() {
-		
+		ArrayList<Imagen> fallidas = new ArrayList<Imagen>();
 
 			@Override
 			public Imagen send(Imagen image) throws RemoteException {
@@ -79,16 +79,19 @@ public class Balanceador{
 										if(isobel!=null) {
 											b=true;
 										}else {
+											listServer.get(i).serverStop();
 											Server s = newServer();
 											log.error("[BALANCER] - Server " + listServer.get(i).getDirection() +" Fail");
-											log.info("[BALANCER] - New server created - " +s.getDirection());
 											registry = LocateRegistry.getRegistry(s.getPort());
 											isobel = (ISobel) registry.lookup("serviceServer");
 										}
 								}
 					
 							results.add(isobel.send(imagePartsCut.get(i)));
+							System.out.println(e.getId());
 					}
+					
+					
 					
 					
 					ArrayList<BufferedImage> returnThis = new ArrayList<BufferedImage>();
@@ -100,6 +103,16 @@ public class Balanceador{
 				} catch (Exception e) {	
 					e.printStackTrace();
 				}
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				//devuelvo imagen
 				finalImagen = new Imagen(a,0,0);
 				for(Server server : listServer) {
 					server.serverStop();

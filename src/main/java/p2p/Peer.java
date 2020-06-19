@@ -71,7 +71,7 @@ public class Peer {
 					}
 						if (intentos>=3) {
 							flag = true;
-							log.error("[PEER] - No server found");
+							log.error("[PEER] - Server not found");
 							System.exit(0);
 						}
 				}
