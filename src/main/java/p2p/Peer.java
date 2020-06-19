@@ -54,6 +54,15 @@ public class Peer {
 		option = read.nextLine();
 	}
 	
+	private static String validateDirectory(File d, String directory) {
+		 d = new File(directory);
+			while(!d.isDirectory()) {
+				System.out.println("Error - " + directory + "is not a directory. Please insert a new directory");
+				directory = read.nextLine();
+				d = new File(directory);
+			}
+		return directory;
+	}
 	
 	
 	public static void startPeer() {
@@ -65,6 +74,7 @@ public class Peer {
 					try {
 						socketPeer = new Socket(_SERVER,_PORTMASTER);
 						log.info("[PEER] - Socket created: " +_SERVER +":"+_PORTMASTER);
+						flag=true;
 					} catch (IOException e) {
 						intentos++;
 						
@@ -81,9 +91,16 @@ public class Peer {
 			System.out.println("--------- Peer menu ---------");
 			System.out.println("Insert directory of download");
 			String directory = read.nextLine();
+			File d = new File(directory);
+			
+			directory=validateDirectory(d, directory);
+				
 			System.out.println("Insert directory to share");
 			String share = read.nextLine();
-			
+			 d = new File(share);
+			 	
+			 share=validateDirectory(d, share);
+			 	
 			File fshare = new File(share);
 			
 			String[] filesNames = fshare.list();
@@ -124,8 +141,31 @@ public class Peer {
 							String msgServer = inputChannel.readLine();
 								if(!msgServer.startsWith("fileNotFound")) {
 									String[] msgServerParts = msgServer.split("@");
-									Integer port = Integer.parseInt(msgServerParts[0]);
-									String route = msgServerParts[1];
+									
+									System.out.println("Choose server to download the file: (INSERT NUMBER OF PEER)");
+									int j=1;
+								
+									for(int i=1;i<msgServerParts.length;i++) {
+											if(i==j) {
+												j+=3;
+												System.out.println(">> Server Peer:" + msgServerParts[i]);
+											}
+										}
+									
+									String serv = read.nextLine();
+									Integer port=null;
+									String route=null;
+									
+									for (int i=0;i<msgServerParts.length;i++) {
+										if(msgServerParts[i].equalsIgnoreCase(serv)) {
+											port = Integer.parseInt(msgServerParts[i+1]);
+											route = msgServerParts[i+2];
+										}
+									}
+									
+									
+									
+									
 									PeerClient peerClient = new PeerClient(port,file,route,directory);
 									Thread threadPeerClient = new Thread(peerClient);
 									threadPeerClient.start();

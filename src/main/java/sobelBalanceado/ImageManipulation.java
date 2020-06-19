@@ -14,7 +14,9 @@ public class ImageManipulation {
 		this.image = image;
 		this.cantPartes = (int) Math.sqrt(cantidad);
 	}
-	
+	public int getcor() {
+		return this.cantPartes;
+	}
 	public ArrayList<BufferedImage> cutImage(){
 		int width = image.getWidth()-2;
 		int height = image.getHeight()-2;
@@ -48,4 +50,6 @@ public class ImageManipulation {
 		}
 		return imgFinal;
 	}
+
+	
 }

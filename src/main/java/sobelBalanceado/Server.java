@@ -57,7 +57,7 @@ public class Server implements Runnable, IControl{
 	public void serverStop() throws RemoteException {
 		try {
 			try {
-				Thread.sleep(1);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 
 			}

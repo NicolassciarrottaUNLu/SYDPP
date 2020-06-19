@@ -15,6 +15,8 @@ public class ImageManipulation {
 		this.cantPartes = (int) Math.sqrt(cantidad);
 	}
 	
+	
+	
 	public ArrayList<BufferedImage> cutImage(){
 		int width = image.getWidth()-2;
 		int height = image.getHeight()-2;

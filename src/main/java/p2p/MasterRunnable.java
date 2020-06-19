@@ -70,18 +70,20 @@ public class MasterRunnable implements Runnable {
 					}
 							if(msgPeer.startsWith("download")) {
 								boolean encontre = false;
+								String servers = "";
 								String msgPeerParts[]=msgPeer.split("@");
 									for(int i=0; i<listOfPeerData.size();i++) {
 										for(int j=0;j<listOfPeerData.get(i).getFiles().size();j++) {
-											if(listOfPeerData.get(i).getFiles().get(j).equalsIgnoreCase(msgPeerParts[1]) && !encontre) {
-												outputChannel.println((listOfPeerData.get(i).getPortServer())+"@"+listOfPeerData.get(i).getRute());
+											if(listOfPeerData.get(i).getFiles().get(j).equalsIgnoreCase(msgPeerParts[1])) {
+												servers=servers+"@"+listOfPeerData.get(i).getName()+"@"+listOfPeerData.get(i).getPortServer()+"@"+listOfPeerData.get(i).getRute();
 												encontre = true;
 											}
 										}
 									}
 									if(!encontre) {
-										outputChannel.println("fileNotFound");
-										
+										outputChannel.println("fileNotFound");	
+									}else {
+										outputChannel.println(servers);
 									}
 							} 
 							

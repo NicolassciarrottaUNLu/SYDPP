@@ -2,6 +2,9 @@ package sobelBalanceado;
 
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -47,13 +50,10 @@ public class Balanceador{
 	}
 	
 	
-
-	
-	
 	
 	public void initBalancer() throws RemoteException {
 		Remote iSobel = UnicastRemoteObject.exportObject( new ISobel() {
-		ArrayList<Imagen> fallidas = new ArrayList<Imagen>();
+		ArrayList<Falla> fallidas = new ArrayList<Falla>();
 
 			@Override
 			public Imagen send(Imagen image) throws RemoteException {
@@ -64,8 +64,13 @@ public class Balanceador{
 				Imagen finalImagen;
 				BufferedImage a = null;
 				ArrayList<BufferedImage> imageParts = null;
-				try {
-					im = new ImageManipulation(image.getImage(), image.get_CORTES());
+			
+					try {
+						im = new ImageManipulation(image.getImage(), image.get_CORTES());
+					} catch (IOException e2) {
+						e2.printStackTrace();
+					}
+					
 					imageParts = im.cutImage();
 					
 					for(int i=0;i<imageParts.size();i++) {
@@ -73,25 +78,33 @@ public class Balanceador{
 							imagePartsCut.add(e);
 							newServer();
 							registry = LocateRegistry.getRegistry(listServer.get(i).getPort());
-							boolean b = false;
-								while (!b) {
+								try {
 									isobel = (ISobel) registry.lookup("serviceServer");
-										if(isobel!=null) {
-											b=true;
-										}else {
-											listServer.get(i).serverStop();
-											Server s = newServer();
-											log.error("[BALANCER] - Server " + listServer.get(i).getDirection() +" Fail");
-											registry = LocateRegistry.getRegistry(s.getPort());
-											isobel = (ISobel) registry.lookup("serviceServer");
-										}
+								} catch (RemoteException|NotBoundException e1) {
+									listServer.get(i).serverStop();
+									try {
+										Thread.sleep(5000);
+									} catch (InterruptedException e3) {
+										e3.printStackTrace();
+									}
+									Server s = newServer();
+									log.error("[BALANCER] - Server " + listServer.get(i).getDirection() +" Fail");
+									registry = LocateRegistry.getRegistry(s.getPort());
+									try {
+										isobel = (ISobel) registry.lookup("serviceServer");
+									} catch (RemoteException | NotBoundException e2) {
+										Falla f = new Falla(imageParts.get(i),i);
+										fallidas.add(f);
+										continue;
+									}
 								}
-					
+
 							results.add(isobel.send(imagePartsCut.get(i)));
-							System.out.println(e.getId());
 					}
 					
-					
+					if (fallidas.size()>0) {
+						System.out.println("FALLE");
+					}
 					
 					
 					ArrayList<BufferedImage> returnThis = new ArrayList<BufferedImage>();
@@ -100,15 +113,6 @@ public class Balanceador{
 					}
 					
 					a = im.joinImage(returnThis);
-				} catch (Exception e) {	
-					e.printStackTrace();
-				}
-				
-				
-				
-				
-				
-				
 				
 				
 				

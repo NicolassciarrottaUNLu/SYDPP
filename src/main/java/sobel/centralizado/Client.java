@@ -27,6 +27,15 @@ public class Client {
 		return result;
 	}
 	
+	private static String validateDirectory(String directory) {
+		File d = new File(directory);
+			while(!d.isFile()) {
+				System.out.println("Error - " + directory + "is not a file. Please insert a new file");
+				directory = sc.nextLine();
+				d = new File(directory);
+			}
+		return directory;
+	}
 	
 	public static void main(String[] args)  {
 		
@@ -39,6 +48,8 @@ public class Client {
 					route = sc.nextLine();
 				}
 			
+				route=validateDirectory(route);
+				
 			File file = new File(route);
 			BufferedImage image = ImageIO.read(file);
 			System.out.println("Image upload successfully");
